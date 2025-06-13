@@ -164,48 +164,60 @@ export default function Index() {
           max-width: 100vw;
           height: 100vh;
           z-index: 0;
-          opacity: 0.15;
+          opacity: 0.1;
         }
-        /* Custom marker styles for Leaflet SVG overlays */
+        /* Subtle paper/grain texture overlay */
+        .retro-bg {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          width: 100vw;
+          height: 100vh;
+          z-index: 0;
+          pointer-events: none;
+          background: repeating-linear-gradient(135deg, rgba(140,120,90,0.04) 0px, rgba(140,120,90,0.04) 1px, transparent 1px, transparent 8px), url('https://www.transparenttextures.com/patterns/paper-fibers.png');
+          background-color: #f5ecd7;
+          background-blend-mode: multiply;
+        }
+        /* Map marker and highlight retro colors */
         .leaflet-overlay-pane .marker-travel {
-          stroke: #2563eb !important;
-          fill: #2563eb !important;
-          fill-opacity: 0.2 !important;
+          stroke: #b48a78 !important;
+          fill: #b48a78 !important;
+          fill-opacity: 0.18 !important;
         }
         .leaflet-overlay-pane .marker-lived {
-          stroke: #fb5607 !important;
-          fill: #fb5607 !important;
-          fill-opacity: 0.2 !important;
+          stroke: #a89c6d !important;
+          fill: #a89c6d !important;
+          fill-opacity: 0.22 !important;
         }
         .marker-travel {
-          background: #2563eb;
+          background: #b48a78;
           border: 2px solid #fff;
           width: 10px;
           height: 10px;
           border-radius: 50%;
-          box-shadow: 0 0 4px #2563eb44;
+          box-shadow: 0 0 4px #b48a7844;
         }
         .marker-lived {
-          background: #fb5607;
+          background: #a89c6d;
           border: 2px solid #fff;
           width: 12px;
           height: 12px;
           border-radius: 50%;
-          box-shadow: 0 0 6px #fb560744;
+          box-shadow: 0 0 6px #a89c6d44;
         }
         .leaflet-control, .leaflet-attribution-flag, .leaflet-bottom, .leaflet-top {
           display: none !important;
         }
       `}</style>
-      <div id="map" />
-      <div className="relative z-10 min-h-screen flex flex-col justify-center items-center" style={{background: 'transparent'}}>
-        {/* Fallback grain/texture overlay */}
-        <div className="absolute inset-0 pointer-events-none z-0" style={{background: "repeating-linear-gradient(135deg, rgba(0,0,0,0.01) 0px, rgba(0,0,0,0.01) 1px, transparent 1px, transparent 8px)"}} />
+      {/* Paper/grain texture overlay */}
+      <div className="retro-bg" />
+      <div id="map" style={{zIndex: 1, position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh'}} />
+      <div className="relative z-10 min-h-screen h-screen flex flex-col justify-center items-center overflow-hidden" style={{background: 'transparent'}}>
         <main className="relative z-10 flex flex-1 flex-col justify-center items-center w-full px-4">
           <Card />
         </main>
-        <footer className="w-full absolute bottom-6 left-0 flex justify-center z-20">
-          <span className="text-xs md:text-sm text-neutral-400 tracking-widest bg-white/60 px-4 py-1 rounded-full shadow-sm select-none">
+        <footer className="w-full absolute top-6 left-0 flex justify-center z-20">
+          <span className="text-xs md:text-sm tracking-widest bg-[#f5ecd7]/80 text-[#666666] px-4 py-1 rounded-full shadow-sm select-none border border-[#e2d3b1]">
             Get Lost • Survive • Thrive
           </span>
         </footer>
