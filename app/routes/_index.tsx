@@ -13,7 +13,7 @@ const livedLocations = [
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "New Remix App" },
+    { title: "The Lunatic Ltd." },
     { name: "description", content: "Welcome to Remix!" },
   ];
 };
