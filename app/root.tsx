@@ -20,6 +20,10 @@ export const links: LinksFunction = () => [
     rel: "stylesheet",
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
+  {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@400;700&display=swap",
+  },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -30,8 +34,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        <style>{`
+          @font-face {
+            font-family: 'Cooper Hewitt Medium';
+            src: url('/fonts/CooperHewitt-Medium.woff') format('woff');
+            font-weight: 500;
+            font-style: normal;
+            font-display: swap;
+          }
+        `}</style>
       </head>
-      <body>
+      <body
+        style={{
+          fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif',
+          // @ts-ignore
+          '--font-serif': "'Cooper Hewitt Medium', 'IBM Plex Serif', 'Times New Roman', serif",
+        }}
+      >
         {children}
         <ScrollRestoration />
         <Scripts />

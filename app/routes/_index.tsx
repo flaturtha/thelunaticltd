@@ -1,4 +1,30 @@
 import type { MetaFunction } from "@remix-run/node";
+import Card from "../components/Card";
+import React from "react";
+
+const montageImages = [
+  "/assets/montage/DSC_7536.JPG",
+  "/assets/montage/DSC_7123 (76).jpg",
+  "/assets/montage/DSC_7060.jpg",
+  "/assets/montage/Picture 383.jpg",
+  "/assets/montage/Picture 353.jpg",
+  "/assets/montage/Picture 323.jpg",
+  "/assets/montage/Picture 315.jpg",
+  "/assets/montage/Picture 297.jpg",
+  "/assets/montage/Picture 040.jpg",
+  "/assets/montage/DSC_6407 (78).jpg",
+  "/assets/montage/DSC_6386 (57).jpg",
+  "/assets/montage/desert2.jpg",
+  "/assets/montage/DSC_6365 (36).jpg",
+  "/assets/montage/DSC_7193.jpg",
+  "/assets/montage/2ndpyramid1.jpg",
+  "/assets/montage/174.jpg",
+];
+
+function getRandomImages<T>(arr: T[], n: number): T[] {
+  const shuffled = arr.slice().sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, n);
+}
 
 export const meta: MetaFunction = () => {
   return [
@@ -8,47 +34,45 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Index() {
+  // Pick 4 random images for the montage
+  const images = React.useMemo(() => montageImages, []);
+
   return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="flex flex-col items-center gap-16">
-        <header className="flex flex-col items-center gap-9">
-          <h1 className="leading text-2xl font-bold text-gray-800 dark:text-gray-100">
-            Welcome to <span className="sr-only">Remix</span>
-          </h1>
-          <div className="h-[144px] w-[434px]">
+    <div className="relative min-h-screen flex flex-col justify-center items-center bg-[#f8f5f0] overflow-hidden">
+      {/* Background montage */}
+      {/*
+      <div className="absolute inset-0 w-full h-full flex flex-row z-0">
+        {images.map((src: string, i: number) => (
+          <div key={src} className="relative flex-1 min-w-0 h-full overflow-hidden" style={{minWidth: '240px'}}>
             <img
-              src="/logo-light.png"
-              alt="Remix"
-              className="block w-full dark:hidden"
+              src={src}
+              alt="Adventure montage"
+              className="object-cover w-full h-full opacity-50 blur-[2px] scale-105 transition-all duration-1000"
+              style={{
+                mixBlendMode: "soft-light",
+                filter: `blur(2px) brightness(0.92)`,
+                zIndex: 0,
+              }}
+              loading="lazy"
             />
-            <img
-              src="/logo-dark.png"
-              alt="Remix"
-              className="hidden w-full dark:block"
-            />
+            {i !== 0 && (
+              <div className="absolute left-0 top-0 h-full w-8 bg-gradient-to-l from-[#f8f5f0]/0 via-[#f8f5f0]/60 to-[#f8f5f0]/0 pointer-events-none" />
+            )}
           </div>
-        </header>
-        <nav className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-gray-200 p-6 dark:border-gray-700">
-          <p className="leading-6 text-gray-700 dark:text-gray-200">
-            What&apos;s next?
-          </p>
-          <ul>
-            {resources.map(({ href, text, icon }) => (
-              <li key={href}>
-                <a
-                  className="group flex items-center gap-3 self-stretch p-3 leading-normal text-blue-700 hover:underline dark:text-blue-500"
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {icon}
-                  {text}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        ))}
       </div>
+      <div className="absolute inset-0 z-10 bg-black/20" />
+      */}
+      {/* Fallback grain/texture overlay */}
+      <div className="absolute inset-0 pointer-events-none z-0" style={{background: "repeating-linear-gradient(135deg, rgba(0,0,0,0.01) 0px, rgba(0,0,0,0.01) 1px, transparent 1px, transparent 8px)"}} />
+      <main className="relative z-10 flex flex-1 flex-col justify-center items-center w-full px-4">
+        <Card />
+      </main>
+      <footer className="w-full absolute bottom-6 left-0 flex justify-center z-20">
+        <span className="text-xs md:text-sm text-neutral-400 tracking-widest bg-white/60 px-4 py-1 rounded-full shadow-sm select-none">
+          Get Lost • Survive • Thrive
+        </span>
+      </footer>
     </div>
   );
 }
