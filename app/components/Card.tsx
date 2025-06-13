@@ -7,13 +7,13 @@ export default function Card() {
       <img
         src="/logo.png"
         alt="The Lunatic Ltd. Monogram"
-        className="pointer-events-none select-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[30vw] max-w-xl opacity-10 z-0"
+        className="pointer-events-none select-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] max-w-2xl md:w-[30vw] md:max-w-xl opacity-15 z-0"
         style={{ filter: 'blur(0.5px)' }}
         draggable={false}
       />
       {/* Main block: perfectly centered */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-full px-4 z-10">
-        <h1 className="text-5xl md:text-7xl font-bold tracking-wider mb-4 uppercase text-center" style={{fontFamily: 'var(--font-serif)'}}>THE LUNATIC LTD.</h1>
+        <h1 className="text-5xl md:text-7xl font-extrabold tracking-wider mb-4 uppercase text-center" style={{fontFamily: 'var(--font-serif)'}}>THE LUNATIC LTD.</h1>
         <div className="text-2xl md:text-3xl font-mono text-neutral-700 mb-4 md:whitespace-nowrap text-center">Explorer | Author | Aviator | Founder | Investor</div>
         <div className="flex flex-col items-center gap-2 mt-4">
           <span className="text-lg md:text-xl font-mono text-neutral-700 text-center">

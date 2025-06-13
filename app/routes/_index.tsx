@@ -1,30 +1,15 @@
 import type { MetaFunction } from "@remix-run/node";
 import Card from "../components/Card";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
-const montageImages = [
-  "/assets/montage/DSC_7536.JPG",
-  "/assets/montage/DSC_7123 (76).jpg",
-  "/assets/montage/DSC_7060.jpg",
-  "/assets/montage/Picture 383.jpg",
-  "/assets/montage/Picture 353.jpg",
-  "/assets/montage/Picture 323.jpg",
-  "/assets/montage/Picture 315.jpg",
-  "/assets/montage/Picture 297.jpg",
-  "/assets/montage/Picture 040.jpg",
-  "/assets/montage/DSC_6407 (78).jpg",
-  "/assets/montage/DSC_6386 (57).jpg",
-  "/assets/montage/desert2.jpg",
-  "/assets/montage/DSC_6365 (36).jpg",
-  "/assets/montage/DSC_7193.jpg",
-  "/assets/montage/2ndpyramid1.jpg",
-  "/assets/montage/174.jpg",
+const travelLocations = [
+  { lat: 48.8566, lng: 2.3522 },   // Paris
+  { lat: 35.6895, lng: 139.6917 }  // Tokyo
 ];
-
-function getRandomImages<T>(arr: T[], n: number): T[] {
-  const shuffled = arr.slice().sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, n);
-}
+const livedLocations = [
+  { lat: 30.0444, lng: 31.2357 },  // Cairo
+  { lat: 51.5072, lng: -0.1276 }   // London
+];
 
 export const meta: MetaFunction = () => {
   return [
@@ -34,46 +19,198 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Index() {
-  // Pick 4 random images for the montage
-  const images = React.useMemo(() => montageImages, []);
+  const mapRef = useRef<any>(null);
+  useEffect(() => {
+    const win = window as any;
+    function initMap() {
+      if (mapRef.current) {
+        console.log("Map already initialized");
+        return; // Already initialized
+      }
+      if (!win.L || !win.L.map) {
+        console.log("Leaflet not loaded yet");
+        return;
+      }
+      console.log("Initializing map");
+      const mapInstance = win.L.map("map", {
+        center: [10, 20],
+        zoom: 2.5,
+        zoomControl: false,
+        attributionControl: false,
+        dragging: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        keyboard: false,
+        tap: false,
+        touchZoom: false,
+        worldCopyJump: false,
+        maxBoundsViscosity: 1.0,
+        // noWrap: false, // allow horizontal repeat for full width
+      });
+      // Remove raster tile layers, use a white background
+      mapInstance.getContainer().style.background = '#fff';
+
+      // User's visited and lived-in countries/states
+      const visitedCountries = [
+        "Democratic Republic of the Congo", "Egypt", "Uganda", "Tanzania", "United Arab Emirates", "Azerbaijan", "Germany", "France", "Ireland", "United Kingdom", "Norway", "Vietnam", "China", "Japan", "Malaysia", "Singapore", "Brazil", "Ecuador", "Colombia", "Canada", "British Virgin Islands", "United States"
+      ];
+      const visitedStates = [
+        "Tennessee", "Arkansas", "Alaska", "Ohio", "Indiana", "Mississippi", "Alabama", "Georgia", "Florida", "Rhode Island", "Virginia", "West Virginia", "Pennsylvania", "New Jersey", "New York", "Louisiana", "Kansas", "Nebraska", "South Dakota", "Colorado", "Montana", "Nevada", "Utah", "Arizona", "New Mexico", "Missouri", "Wisconsin", "Delaware", "Illinois", "Michigan", "North Carolina", "South Carolina", "Wyoming", "Washington, D.C."
+      ];
+      const livedCountries = ["Kenya", "United States", "United States Virgin Islands", "US Virgin Islands"];
+      const livedStates = ["Kentucky", "Maryland", "Texas", "Oklahoma"];
+
+      // Helper for country name normalization
+      function normalizeCountryName(name: any) {
+        if (name === "Zaire") return "Democratic Republic of the Congo";
+        if (name === "England" || name === "Scotland" || name === "Northern Ireland") return "United Kingdom";
+        if (name === "Dubai" || name === "Sharjah") return "United Arab Emirates";
+        return name;
+      }
+
+      // Load and style countries
+      fetch("/assets/ne_50m_admin_0_countries.geojson")
+        .then(res => res.json())
+        .then(data => {
+          win.L.geoJSON(data, {
+            style: (feature: any) => {
+              const name = normalizeCountryName(feature.properties.ADMIN || feature.properties.name);
+              if (livedCountries.includes(name)) {
+                return { color: "#22c55e", weight: 2, fillColor: "#22c55e", fillOpacity: 0.25 };
+              }
+              if (visitedCountries.includes(name)) {
+                return { color: "#2563eb", weight: 2, fillColor: "#2563eb", fillOpacity: 0.18 };
+              }
+              return { color: "#222", weight: 1, fillColor: "#fff", fillOpacity: 0 };
+            },
+            interactive: false,
+          }).addTo(mapInstance);
+        });
+      // Load and style US states (new file)
+      fetch("/assets/us_states.geojson")
+        .then(res => res.json())
+        .then(data => {
+          win.L.geoJSON(data, {
+            style: (feature: any) => {
+              const name = feature.properties.name;
+              if (livedStates.includes(name)) {
+                return { color: "#22c55e", weight: 2, fillColor: "#22c55e", fillOpacity: 0.25 };
+              }
+              if (visitedStates.includes(name)) {
+                return { color: "#2563eb", weight: 2, fillColor: "#2563eb", fillOpacity: 0.18 };
+              }
+              return { color: "#222", weight: 1, fillColor: "#fff", fillOpacity: 0 };
+            },
+            interactive: false,
+          }).addTo(mapInstance);
+        });
+      mapRef.current = mapInstance;
+      // Adjust map center for more map below card
+      mapInstance.setView([20, 10], 2.5);
+    }
+    function waitForLeafletAndInit(retries = 10) {
+      if (typeof window === "undefined") return;
+      const win = window as any;
+      if (win.L && win.L.map) {
+        initMap();
+      } else if (retries > 0) {
+        console.log("Waiting for Leaflet to load...");
+        setTimeout(() => waitForLeafletAndInit(retries - 1), 300);
+      } else {
+        console.error("Leaflet JS did not load after waiting.");
+      }
+    }
+    if (typeof window !== "undefined") {
+      if (!win.L) {
+        if (!document.getElementById('leaflet-cdn')) {
+          const script = document.createElement('script');
+          script.id = 'leaflet-cdn';
+          script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+          script.async = true;
+          script.onload = () => {
+            console.log("Leaflet script loaded");
+            waitForLeafletAndInit();
+          };
+          document.body.appendChild(script);
+        } else {
+          document.getElementById('leaflet-cdn')!.addEventListener('load', () => {
+            console.log("Leaflet script loaded (event)");
+            waitForLeafletAndInit();
+          });
+        }
+        waitForLeafletAndInit();
+      } else {
+        waitForLeafletAndInit();
+      }
+    }
+    return () => {
+      if (mapRef.current && mapRef.current.remove) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, []);
 
   return (
-    <div className="relative min-h-screen flex flex-col justify-center items-center bg-[#f8f5f0] overflow-hidden">
-      {/* Background montage */}
-      {/*
-      <div className="absolute inset-0 w-full h-full flex flex-row z-0">
-        {images.map((src: string, i: number) => (
-          <div key={src} className="relative flex-1 min-w-0 h-full overflow-hidden" style={{minWidth: '240px'}}>
-            <img
-              src={src}
-              alt="Adventure montage"
-              className="object-cover w-full h-full opacity-50 blur-[2px] scale-105 transition-all duration-1000"
-              style={{
-                mixBlendMode: "soft-light",
-                filter: `blur(2px) brightness(0.92)`,
-                zIndex: 0,
-              }}
-              loading="lazy"
-            />
-            {i !== 0 && (
-              <div className="absolute left-0 top-0 h-full w-8 bg-gradient-to-l from-[#f8f5f0]/0 via-[#f8f5f0]/60 to-[#f8f5f0]/0 pointer-events-none" />
-            )}
-          </div>
-        ))}
+    <>
+      {/* Leaflet marker styles in head */}
+      <style>{`
+        #map {
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          width: 100vw;
+          min-width: 100vw;
+          max-width: 100vw;
+          height: 100vh;
+          z-index: 0;
+          opacity: 0.15;
+        }
+        /* Custom marker styles for Leaflet SVG overlays */
+        .leaflet-overlay-pane .marker-travel {
+          stroke: #2563eb !important;
+          fill: #2563eb !important;
+          fill-opacity: 0.2 !important;
+        }
+        .leaflet-overlay-pane .marker-lived {
+          stroke: #fb5607 !important;
+          fill: #fb5607 !important;
+          fill-opacity: 0.2 !important;
+        }
+        .marker-travel {
+          background: #2563eb;
+          border: 2px solid #fff;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          box-shadow: 0 0 4px #2563eb44;
+        }
+        .marker-lived {
+          background: #fb5607;
+          border: 2px solid #fff;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          box-shadow: 0 0 6px #fb560744;
+        }
+        .leaflet-control, .leaflet-attribution-flag, .leaflet-bottom, .leaflet-top {
+          display: none !important;
+        }
+      `}</style>
+      <div id="map" />
+      <div className="relative z-10 min-h-screen flex flex-col justify-center items-center" style={{background: 'transparent'}}>
+        {/* Fallback grain/texture overlay */}
+        <div className="absolute inset-0 pointer-events-none z-0" style={{background: "repeating-linear-gradient(135deg, rgba(0,0,0,0.01) 0px, rgba(0,0,0,0.01) 1px, transparent 1px, transparent 8px)"}} />
+        <main className="relative z-10 flex flex-1 flex-col justify-center items-center w-full px-4">
+          <Card />
+        </main>
+        <footer className="w-full absolute bottom-6 left-0 flex justify-center z-20">
+          <span className="text-xs md:text-sm text-neutral-400 tracking-widest bg-white/60 px-4 py-1 rounded-full shadow-sm select-none">
+            Get Lost • Survive • Thrive
+          </span>
+        </footer>
       </div>
-      <div className="absolute inset-0 z-10 bg-black/20" />
-      */}
-      {/* Fallback grain/texture overlay */}
-      <div className="absolute inset-0 pointer-events-none z-0" style={{background: "repeating-linear-gradient(135deg, rgba(0,0,0,0.01) 0px, rgba(0,0,0,0.01) 1px, transparent 1px, transparent 8px)"}} />
-      <main className="relative z-10 flex flex-1 flex-col justify-center items-center w-full px-4">
-        <Card />
-      </main>
-      <footer className="w-full absolute bottom-6 left-0 flex justify-center z-20">
-        <span className="text-xs md:text-sm text-neutral-400 tracking-widest bg-white/60 px-4 py-1 rounded-full shadow-sm select-none">
-          Get Lost • Survive • Thrive
-        </span>
-      </footer>
-    </div>
+    </>
   );
 }
 
